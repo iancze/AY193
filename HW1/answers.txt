@@ -1,0 +1,9 @@
+Answers
+
+a) Eyeball estimates
+ a = 0.5
+ b = 0.6
+
+ sigma = 0.15
+ sigma_a = 0.02
+ sigma_b = 0.1
