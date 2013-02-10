@@ -2,7 +2,7 @@ import asciitable
 import matplotlib.pyplot as plt
 import numpy as np
 
-data = asciitable.read("runa.dat")
+data = asciitable.read("run1.dat")
 dataa = asciitable.read("runa.dat")
 datab = asciitable.read("runb.dat")
 datac = asciitable.read("runc.dat")
@@ -59,12 +59,13 @@ def calc_mean_and_sigma():
     print("Acceptance Ratio %.2f" % (len(np.where(data['accept'][burn_in:] == 'True')[0])/len(data['accept'][burn_in:])),)
 
 def hist_param():
+    burn_in = 100
     fig, (ax1,ax2) = plt.subplots(2,1)
-    ax1.hist(data["a"],normed=True,bins=20)
+    ax1.hist(data["a"][burn_in:],normed=True)
     ax1.set_xlabel("a")
     ax1.set_title("Distribution of a")
     ax1.set_ylabel("Percentage")
-    ax2.hist(data["b"],normed=True,bins=20)
+    ax2.hist(data["b"][burn_in:],normed=True)
     ax2.set_xlabel("b")
     ax2.set_ylabel("Percentage")
     ax2.set_title("Distribution of b")
@@ -74,6 +75,6 @@ def hist_param():
 
 #plot_vs_j()
 #calc_mean_and_sigma()
-#hist_param()
+hist_param()
 #ax = plot_2d()
-plot_2d_all()
+#plot_2d_all()

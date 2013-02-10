@@ -1,35 +1,19 @@
-%%\documentclass[manuscript]{aastex} %one-column, double-spaced document
+%\documentclass[manuscript]{aastex} %one-column, double-spaced document
 %%\documentclass[preprint2]{aastex} %double-column, single-spaced document:
-%%\documentclass[preprint2,longabstract]{aastex}
+%\documentclass[preprint]{aastex}
 \documentclass[iop,floatfix]{emulateapj}
 \usepackage{apjfonts}
-
 \usepackage{hyperref}
-%\documentclass[12pt]{article}
-%\usepackage{graphicx}
-
-%\slugcomment{}
 
 \shorttitle{HW 1: MCMC}
-%\shortauthors{}
 
 \begin{document}
-
 \title{HW 1 Solutions: Fitting a straight line with MCMC}
-
 \author{}
 \affil{Harvard University\\
   Department of Astronomy\\
   60 Garden Street MS 10\\
 Cambridge, MA 02138}
-\email{iczekala@cfa.harvard.edu}
-%\and
-%\author{R. J. Hanisch\altaffilmark{5}}
-%\affil{Space Telescope Science Institute, Baltimore, MD 21218}
-
-%\altaffiltext{1}{Visiting Astronomer, Cerro Tololo Inter-American Observatory.
-%CTIO is operated by AURA, Inc.\ under contract to the National Science
-%Foundation.}
 
 \begin{abstract}
 We use a Metropolis-Hastings Markov Chain Monte Carlo (MCMC) method to determine the best-fit parameters for a straight line to noisy data.
@@ -84,7 +68,7 @@ Calculating ${\cal L}$ for a given $p_n$ is likely to be computationally intensi
 \begin{figure}
 \begin{center}
   \includegraphics{likelihood}
-  \caption{The ${\cal L}$ space sampled by a grid. Contours show $\log_{10}({\cal L})$, and so many of the values are negative. Note how strongly peaked the probability distribution is around $a=0.5$,$b=0.6$. This likelihood space will be sampled by our Markov Chain Monte Carlo algorithm.}
+  \caption{The ${\cal L}$ space sampled on a grid. Contours show $\log_{10}({\cal L})$, and so many of the values are negative. Note how strongly peaked the probability distribution is around $a=0.5$,$b=0.6$. This likelihood space will be sampled by our Markov Chain Monte Carlo algorithm.}
 \label{fig:likelihood}
 \end{center}
 \end{figure}
@@ -125,7 +109,7 @@ Now, as in the class handout, calculate $r_j$ and apply the Metropolis-Hastings 
   \item if $r_j \geq 1$, then accept this step, because your proposed step has a higher (or equal) ${\cal L}$
   \item if $r_j < 1$, then the likelihood of your proposed step is lower, so generate a uniform random variable, $u \propto P_U$, which has the range $[0,1]$.
     \begin{enumerate}
-      \item if $r_j \geq u$, accept the step, allowing you to climb out of local minima
+      \item if $r_j \geq u$, accept the step, allowing you to climb out of local minima. This makes large jumps in $\chi^2$ possible, due to the fact that sometimes $u \approx 0$.
       \item if $r_j < u$, reject the step. 
     \end{enumerate}
   \item you should record $a_j$ and $b_j$ at the end of this step. If the new values were accepted, record them. Otherwise, record a duplicate of the previous values. Do not record the proposed values if they were rejected.
@@ -133,84 +117,73 @@ Now, as in the class handout, calculate $r_j$ and apply the Metropolis-Hastings 
 
 Once the Markov Chain has settled down and bounced around the most likely parameters for a while (for me, this was $\sim 1000$ steps for me), you can exit the algorithm. Congratulations, by saving your list of parameters you have generated a Markov chain. In later problem sets, we will discuss how to asses convergence of this chain in a more quantitative manner. If you are curious, check out the MCMC chapter in \citet{gcs+04}.
 
-\section{Studying your Markov chain}
-
-In every Markov chain, there is usually a period of ``burn in,'' where the jumps in parameter space 
-
-Afterwards, discard the burn-in steps. These should be apparent as the steps that are much different from each other, kind of a trai
-
-You should 
-
-This algorithm works because large jumps in $\chi^2$ are possible, due to the fact that sometimes $u \approx 0$.
-
-Because this calculation wasn't too time intensive, I calculated the ${\cal L}$ over a wide range of $\{a,b\}$ and plotted this is Figure~\ref{fig:likelihood}. Normally, this would be computationally prohibitive for problems that would require MCMC, although it might be fine to calculate with a coarse grid.
-
-
-[add class handout to website]
-
-List of parameter steps is available in my online code, here.
-
-
-
-
-\begin{figure}
-\begin{center}
-  \includegraphics{param_vs_j}
-  \caption{}
-\label{fig:param_vs_j}
-\end{center}
-\end{figure}
-
 \begin{figure}
 \begin{center}
   \includegraphics{2d_burn_in}
-  \caption{}
+  \caption{The Markov chain from run \#1 plotted on top of the $\{a,b\}$ parameter space. We can see how the algorithm converged upon a specific of region parameter space. The ``burn in'' region is where the chain was biased by the starting location, and we discard it for all further analysis.}
 \label{fig:burn_in}
 \end{center}
 \end{figure}
 
+\section{Studying your Markov chain}
+
+In every Markov chain, there is usually a period of ``burn in,'' where the jumps in parameter space are biased by the starting location, and do not accurately reflect the overall landscape of the likelihood space. When plotting the chain on top of the $\{a,b\}$ parameter space in Figure~\ref{fig:burn_in}, we can clearly see the burn in region.
+
+\begin{figure}
+\begin{center}
+  \includegraphics{param_vs_j}
+  \caption{Same data plotted in Figure~\ref{fig:burn_in}, but plotted for individual parameters as a function of $j$.}
+\label{fig:param_vs_j}
+\end{center}
+\end{figure}
+
+All subsequent analysis of the chain should be done after discarding the burn-in steps from the Markov chain. All chains referred to in this document can be found with the code as \verb|runX.dat|. The experts say that an acceptance ratio in step \#3 of the Metropolis-Hastings algorithm should be close to 25\%.
+
+In order to determine the best fit parameters of our model (and their errors), we need to examine the Markov chain, since this chain has sampled our likelihood space in a statistically consistent manner. After discarding the burn in region, we bin the values of the chain and plot them in a histogram. This histogram is proportional to the target probability distribution. If we normalize it so that the integral is 1, it is the probability distribution (Figure~\ref{fig:hist_param}). It is from this distribution that we can draw the mean and standard deviation on the parameters. The mean and standard deviation can be determined via standard statistical tasks, for example \verb|Python|'s \verb|np.mean| and \verb|np.std|.
+
 \begin{figure}
 \begin{center}
   \includegraphics{hist_param}
-  \caption{}
+  \caption{Once normalized to 1, the binned Markov Chain (minus burn in period) is the probability density function of the parameters. The means of these distributions are our best estimates on $a$, $b$ and the widths are our errors $\sigma_a$, $\sigma_b$.}
 \label{fig:hist_param}
 \end{center}
 \end{figure}
 
+\section{Effect of changing step size and starting position}
 
-Changing step size to vary acceptance ration
+Now that we have a working MCMC, let's tweak it to see what happens. What is the effect of changing the step size? We run three different chains with different $\Delta\sigma_a$ and $\Delta\sigma_b$, summarized in Table~\ref{table:acceptance}. We see that using jump sizes similar to the original estimates yields the most desirable acceptance ratio. If we choose a step size that is too small, we may have a higher acceptance ratio, but we will also take a longer time to converge upon the most likely parameters. If our likelihood space is not monotonic, and has local maxima, then our chain may have trouble escaping. However, if our step size is too big, then we may oscillate back and forth around the maximum without actually sampling it adequately.
+
 \begin{deluxetable}{lllr}
-  \tablecaption{\label{table:acceptance}Acceptance}
+  \tablecaption{\label{table:acceptance}Step size and acceptance ratio}
   \tablehead{\colhead{Run \#} & \colhead{$\Delta\sigma_a$} & \colhead{$\Delta\sigma_b$} & \colhead{Acceptance (\%)}}
 \startdata
 1 & 0.03 & 0.05 & 24 \\
 2 & 0.01 & 0.02 & 60 \\
 3 & 0.05 & 0.10 & 9 \\
 \enddata
-\tablecomments{}
+\tablecomments{For this data set, it appears the ideal step size is close to $\sigma_{a,e}$ and $\sigma_{b,e}$.}
 \end{deluxetable}
 
+What is the effect does using different starting parameters have on the parameter estimates? Theoretically, if the algorithm works correctly and we discard our burn-in region properly, then we should obtain similar parameter estimates regardless of our starting position. Table~\ref{table:starting} shows that this is in fact the case. We can see in Figure~\ref{fig:2d_all} that three different chains, each started from a different position, all converge upon the most likely region of parameter space.
 
-\section{Changing the starting estimates to study parameter estimates}
 \begin{deluxetable}{cccr@{$\pm$}lr@{$\pm$}l}
-  \tablecaption{\label{table:starting}Starting}
+  \tablecaption{\label{table:starting}Starting position and parameter estimates}
   \tablehead{\colhead{Run \#} & \colhead{$a_{\rm start}$} & \colhead{$b_{\rm start}$} & \multicolumn{2}{c}{$a \pm \sigma_a$} & \multicolumn{2}{c}{$b \pm \sigma_b$}}
 \startdata
 A & 0.0 & 1.0 & 0.498 & 0.010 & 0.595 & 0.021\\
 B & 1.0 & 1.0 & 0.499 & 0.013 & 0.604 & 0.022\\
 C & 0.0 & -0.3 & 0.499 & 0.009 & 0.604 & 0.020\\
 \enddata
-\tablecomments{All done with $\sigma_a = 0.03$, $\sigma_b = 0.05$. Runs in Figure}
+\tablecomments{Each chain done with $\Delta\sigma_a = 0.03$, $\Delta\sigma_b = 0.05$. Runs displayed in Figure~\ref{fig:2d_all}.}
 \end{deluxetable}
 
 \begin{figure}
 \begin{center}
   \includegraphics{2d_all}
-  \caption{}
+  \caption{Graphical display of Markov chains in Table~\ref{table:starting}. Note that each chain converges upon the most likely region of parameter space irregardless of starting position.}
 \label{fig:2d_all}
 \end{center}
 \end{figure}
-
 
 \bibliography{master}
 \bibliographystyle{apj}
