@@ -37,3 +37,13 @@ nosetests.xml
 # Vim
 *~
 *.swp
+
+#LaTeX
+*.aux
+*.bbl
+*.blg
+*.dvi
+*.log
+*.out
+*.ps
+*.bib
